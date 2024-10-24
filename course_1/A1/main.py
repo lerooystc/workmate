@@ -66,6 +66,6 @@ class LinkedList():
         
     
 lst = LinkedList()
-lst.add_obj(ObjList("Fuck"))
+lst.add_obj(ObjList("1"))
 lst.remove_obj()
 print(lst.get_data())
