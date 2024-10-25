@@ -13,9 +13,9 @@ class Server:
     id_server = it_count(1)
     
     def __init__(self) -> None:
-        self.buffer = dict()
-        self.ip = next(Server.id_server)
-        self.router = None
+        self.buffer: dict[int: Data] = dict()
+        self.ip: int = next(Server.id_server)
+        self.router: Router = None
     
     def get_ip(self) -> int:
         """Получение ip-адреса сервера"""
@@ -46,8 +46,8 @@ class Server:
     
 class Router:
     def __init__(self) -> None:
-        self.buffer = dict()
-        self.servers = dict()
+        self.buffer: dict[Server, Data] = dict()
+        self.servers: dict[int, Server] = dict()
     
     def link(self, server: Server) -> None:
         """Линкинг"""
@@ -63,6 +63,7 @@ class Router:
         """Отправление в буфферы всем серверам"""
         for server, data in self.buffer.items():
             for message in data:
+                message: Data
                 self.servers.get(message.ip).buffer.setdefault(server.get_ip(), []).append(message)
         self.buffer = dict()
             

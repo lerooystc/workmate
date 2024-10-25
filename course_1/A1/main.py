@@ -3,26 +3,26 @@ from typing import Self
 
 class ObjList():
     def __init__(self, data) -> None:
-         self.__next = None
-         self.__prev = None
-         self.__data = data
+         self.__next: Self = None
+         self.__prev: Self = None
+         self.__data: any = data
 
     def get_next(self) -> Self:
         return self.__next
     
-    def set_next(self, obj):
+    def set_next(self, obj) -> None:
         self.__next = obj
         
     def get_prev(self) -> Self:
         return self.__prev
     
-    def set_prev(self, obj):
+    def set_prev(self, obj) -> None:
         self.__prev = obj
         
     def get_data(self) -> any:
         return self.__data
     
-    def set_data(self, data):
+    def set_data(self, data) -> None:
         self.__data = data
         
     def __str__(self) -> str:
@@ -31,8 +31,8 @@ class ObjList():
 
 class LinkedList():
     def __init__(self) -> None:
-        self.head = None
-        self.tail = None
+        self.head: ObjList = None
+        self.tail: ObjList = None
     
     def add_obj(self, obj: ObjList) -> None:
         if not self.head:

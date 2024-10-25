@@ -9,7 +9,7 @@ class Cell:
         self.is_mine = is_mine
         self.is_open = is_open
         
-    def check_for_neighbours(self, m_coords: set, size: int):
+    def check_for_neighbours(self, m_coords: set, size: int) -> None:
         """
         Проверяет соседей каждой клетки на наличие мин.
         """
@@ -47,7 +47,7 @@ class GameField:
         self.field = None
         self.init()
     
-    def init(self):
+    def init(self) -> None:
         mine_coords = set()
         while len(mine_coords) != self.mines:
             a, b = randrange(self.size), randrange(self.size)
@@ -64,7 +64,7 @@ class GameField:
         self.field = field           
     
     
-    def show(self):
+    def show(self) -> None:
         # Для наглядности решения решил не закрывать все клетки, а выводить как есть
         for one in self.field:
             print(*one)
