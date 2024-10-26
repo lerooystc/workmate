@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 from itertools import count as it_count
 
-# я бы это все переписал 
+# я бы это все переписал (как минимум в data добавил бы ip отправившего?)
 
 @dataclass
 class Data:
     data: str
-    ip: int
+    ip_dest: int
     
 
 class Server:
     id_server = it_count(1)
     
     def __init__(self) -> None:
-        self.buffer: dict[int: Data] = dict()
+        self.buffer: dict[Server, Data] = dict()
         self.ip: int = next(Server.id_server)
         self.router: Router = None
     
@@ -40,7 +40,7 @@ class Server:
             return self.ip == __value.ip
         return NotImplemented
     
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return str(self.ip)
     
     
@@ -64,7 +64,7 @@ class Router:
         for server, data in self.buffer.items():
             for message in data:
                 message: Data
-                self.servers.get(message.ip).buffer.setdefault(server.get_ip(), []).append(message)
+                self.servers.get(message.ip_dest).buffer.setdefault(server, []).append(message)
         self.buffer = dict()
             
             
