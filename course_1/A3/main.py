@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from itertools import count as it_count
+from typing import Self
 
 # я бы это все переписал (как минимум в data добавил бы ip отправившего?)
 
@@ -23,13 +24,21 @@ class Server:
     
     def send_data(self, data: Data) -> None:
         """Отправление данных на роутер"""
-        self.router.buffer.setdefault(self, []).append(data)
+        self.router.add_to_buffer(data, self)
     
     def get_data(self) -> dict:
         """Получение и очищение буффера"""
         buffer = self.buffer
         self.buffer = dict()
         return buffer
+    
+    def add_to_buffer(self, data: Data, server: Self) -> None:
+        """Добавление в буфер"""
+        self.buffer.setdefault(server, []).append(data)
+        
+    def set_router(self, router: 'Router'):
+        """Сеттер для роутера"""
+        self.router = router
     
     def __hash__(self) -> int:
         """Хэшинг для назначения сервера ключом словаря"""
@@ -52,20 +61,26 @@ class Router:
     def link(self, server: Server) -> None:
         """Линкинг"""
         self.servers[server.get_ip()] = server
-        server.router = self
+        server.set_router(self)
     
     def unlink(self, server: Server) -> None:
         """Делинкинг"""
         del self.servers[server.get_ip()]
-        server.router = None
+        server.set_router(None)
     
     def send_data(self) -> None:
         """Отправление в буфферы всем серверам"""
         for server, data in self.buffer.items():
             for message in data:
                 message: Data
-                self.servers.get(message.ip_dest).buffer.setdefault(server, []).append(message)
+                receiver = self.servers.get(message.ip_dest)
+                if receiver:
+                    receiver.add_to_buffer(message, server)
         self.buffer = dict()
+        
+    def add_to_buffer(self, data: Data, server: Server) -> None:
+        """Добавление в буфер"""
+        self.buffer.setdefault(server, []).append(data)
             
             
 router = Router()
