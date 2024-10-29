@@ -1,35 +1,35 @@
-from typing import Self
+from typing import Self, Any
 
 
-class ObjList():
-    def __init__(self, data) -> None:
+class ObjList:
+    def __init__(self, data: Any) -> None:
          self.__next: Self = None
          self.__prev: Self = None
-         self.__data: any = data
+         self.__data = data
 
     def get_next(self) -> Self:
         return self.__next
     
-    def set_next(self, obj) -> None:
+    def set_next(self, obj: Self) -> None:
         self.__next = obj
         
     def get_prev(self) -> Self:
         return self.__prev
     
-    def set_prev(self, obj) -> None:
+    def set_prev(self, obj: Self) -> None:
         self.__prev = obj
         
-    def get_data(self) -> any:
+    def get_data(self) -> Any:
         return self.__data
     
-    def set_data(self, data) -> None:
+    def set_data(self, data: Any) -> None:
         self.__data = data
         
     def __str__(self) -> str:
         return self.__data
 
 
-class LinkedList():
+class LinkedList:
     def __init__(self) -> None:
         self.head: ObjList = None
         self.tail: ObjList = None
@@ -56,7 +56,7 @@ class LinkedList():
                 self.tail = None
                 self.head = None
             
-    def get_data(self) -> list:
+    def get_data(self) -> list[Any]:
         res = []
         current = self.head
         while current:
@@ -67,5 +67,4 @@ class LinkedList():
     
 lst = LinkedList()
 lst.add_obj(ObjList("1"))
-lst.remove_obj()
 print(lst.get_data())

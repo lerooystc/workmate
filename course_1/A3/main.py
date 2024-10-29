@@ -26,7 +26,7 @@ class Server:
         """Отправление данных на роутер"""
         self.router.add_to_buffer(data, self)
     
-    def get_data(self) -> dict:
+    def get_data(self) -> dict[Server, Data]:
         """Получение и очищение буффера"""
         buffer = self.buffer
         self.buffer = dict()
