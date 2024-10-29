@@ -21,7 +21,7 @@ class Cell:
                     if coords in m_coords:
                         self.mines_around += 1
 
-    def is_mine(self, m_coords: set[tuple[int, int]]) -> None:
+    def is_a_mine(self, m_coords: set[tuple[int, int]]) -> None:
         """
         Проверяет, если сама клетка мина.
         """
@@ -58,7 +58,7 @@ class GameField:
             inner_list = []
             for y in range(self.size):
                 cell = Cell(x, y)
-                cell.is_mine(mine_coords)
+                cell.is_a_mine(mine_coords)
                 cell.has_neighbours(mine_coords, self.size)
                 inner_list.append(cell)
             field.append(inner_list)
