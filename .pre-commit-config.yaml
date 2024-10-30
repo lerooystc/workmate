@@ -6,7 +6,7 @@ repos:
     -   id: end-of-file-fixer
         exclude: |
             (?x)^(
-                requirements.txt | .git | README.md | .gitignore | Dockerfile | docker-compose.yml
+                requirements.txt | .git | README.md | .gitignore | Dockerfile | docker-compose.yml | foo.db | oil.xls | thoughts.txt
             )$
     -   id: trailing-whitespace
 
