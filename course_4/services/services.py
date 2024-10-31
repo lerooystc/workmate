@@ -38,7 +38,7 @@ def date_to_link(date: datetime) -> str:
     )
 
 
-async def upload_trades(date: datetime, session: AsyncSession):
+async def upload_trades(date: datetime, session: AsyncSession) -> str:
     url = date_to_link(date)
     try:
         df = process_sheet(url)

@@ -16,7 +16,7 @@ router = APIRouter()
 async def parse_trades(
     date: date,
     db: Session = Depends(get_session),
-):
+) -> dict[str, str]:
     return_value = await upload_trades(date=date, session=db)
     if not return_value:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
