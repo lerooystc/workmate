@@ -18,3 +18,7 @@ COLUMN_NAMES = [
     "total",
     "count",
 ]
+
+
+class DeadLinkException(Exception):
+    pass
