@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.post("/trades/", status_code=status.HTTP_200_OK)
+@router.post("/trades/", status_code=status.HTTP_201_CREATED)
 async def parse_trades(
     date: date,
     db: Session = Depends(get_session),
