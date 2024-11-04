@@ -7,17 +7,22 @@ from time import perf_counter
 from typing import List
 
 import pandas as pd
+from common.const import COLUMN_NAMES
+from common.const import TO_REMOVE
+from common.exceptions import DeadLinkException
+from common.util import date_to_link
+from common.util import range_to_links
 from db.models import Trade
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from util.util import COLUMN_NAMES
-from util.util import date_to_link
-from util.util import DeadLinkException
-from util.util import range_to_links
-from util.util import TO_REMOVE
 
 
 def process_sheet(url: str) -> pd.DataFrame:
+    """
+    Производит перевод .xls файла в Pandas DataFrame.
+
+    :param url: URL .xls файла.
+    """
     try:
         df: pd.DataFrame = pd.read_excel(url)
     except Exception:
@@ -42,6 +47,11 @@ def process_sheet(url: str) -> pd.DataFrame:
 
 
 def process_sheet_handler(url: str) -> pd.DataFrame | None:
+    """
+    Оборот для функции process_sheet, возвращающий None в случае мертвой ссылки.
+
+    :param url: URL .xls файла.
+    """
     try:
         df = process_sheet(url)
         return df
@@ -50,6 +60,12 @@ def process_sheet_handler(url: str) -> pd.DataFrame | None:
 
 
 def sync_upload_trades(date: datetime, session: Session) -> float:
+    """
+    Синхронный сервис обработки данных о продажах для одного дня.
+
+    :param date: Дата торгов.
+    :param session: Сессия БД.
+    """
     s = perf_counter()
     url = date_to_link(date)
     df = process_sheet_handler(url)
@@ -60,6 +76,12 @@ def sync_upload_trades(date: datetime, session: Session) -> float:
 
 
 async def async_upload_trades(date: datetime, session: AsyncSession) -> float:
+    """
+    Асинхронный сервис обработки данных о продажах для одного дня.
+
+    :param date: Дата торгов.
+    :param session: Сессия БД.
+    """
     s = perf_counter()
     url = date_to_link(date)
     df = process_sheet_handler(url)
@@ -73,6 +95,13 @@ async def async_upload_trades(date: datetime, session: AsyncSession) -> float:
 async def async_bulk_upload_trades(
     date_start: datetime, date_end: datetime, session: AsyncSession
 ) -> float:
+    """
+    Асинхронный сервис обработки данных о продажах для диапазона дат.
+
+    :param date_start: Дата начала торгов.
+    :param date_end: Дата начала торгов.
+    :param session: Сессия БД.
+    """
     s = perf_counter()
     url_set = range_to_links(date_start, date_end)
     with ProcessPoolExecutor() as process_pool:
@@ -95,6 +124,13 @@ async def async_bulk_upload_trades(
 def sync_bulk_upload_trades(
     date_start: datetime, date_end: datetime, session: Session
 ) -> float:
+    """
+    Синхронный сервис обработки данных о продажах для диапазона дат.
+
+    :param date_start: Дата начала торгов.
+    :param date_end: Дата начала торгов.
+    :param session: Сессия БД.
+    """
     s = perf_counter()
     url_set = range_to_links(date_start, date_end)
     for url in url_set:
