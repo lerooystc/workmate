@@ -1,17 +1,32 @@
+import asyncio
+from asyncio.events import AbstractEventLoop
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+from functools import partial
+from time import perf_counter
+from typing import List
 
 import pandas as pd
+from common.const import COLUMN_NAMES
+from common.const import TO_REMOVE
+from common.exceptions import DeadLinkException
+from common.util import date_to_link
+from common.util import range_to_links
 from db.models import Trade
 from sqlalchemy.ext.asyncio import AsyncSession
-from util.util import COLUMN_NAMES
-from util.util import DeadLinkException
-from util.util import TO_REMOVE
+from sqlalchemy.orm import Session
 
 
 def process_sheet(url: str) -> pd.DataFrame:
+    """
+    Производит перевод .xls файла в Pandas DataFrame.
+
+    :param url: URL .xls файла.
+    """
     try:
         df: pd.DataFrame = pd.read_excel(url)
     except Exception:
+        print(url)
         raise DeadLinkException
     trades_date = datetime.strptime(df.iloc[2]["Форма СЭТ-БТ"][-10:], "%d.%m.%Y")
     index = df[df["Форма СЭТ-БТ"] == "Единица измерения: Метрическая тонна"].index[0]
@@ -31,21 +46,97 @@ def process_sheet(url: str) -> pd.DataFrame:
     return df
 
 
-def date_to_link(date: datetime) -> str:
-    formatted_date = date.strftime("%Y%m%d")
-    return (
-        f"https://spimex.com/upload/reports/oil_xls/oil_xls_{formatted_date}162000.xls"
-    )
+def process_sheet_handler(url: str) -> pd.DataFrame | None:
+    """
+    Оборот для функции process_sheet, возвращающий None в случае мертвой ссылки.
 
-
-async def upload_trades(date: datetime, session: AsyncSession) -> str:
-    url = date_to_link(date)
+    :param url: URL .xls файла.
+    """
     try:
         df = process_sheet(url)
+        return df
     except DeadLinkException:
         return None
+
+
+def sync_upload_trades(date: datetime, session: Session) -> float:
+    """
+    Синхронный сервис обработки данных о продажах для одного дня.
+
+    :param date: Дата торгов.
+    :param session: Сессия БД.
+    """
+    s = perf_counter()
+    url = date_to_link(date)
+    df = process_sheet_handler(url)
+    trades = [Trade(**row.to_dict()) for _, row in df.iterrows()]
+    session.add_all(trades)
+    session.commit()
+    return perf_counter() - s
+
+
+async def async_upload_trades(date: datetime, session: AsyncSession) -> float:
+    """
+    Асинхронный сервис обработки данных о продажах для одного дня.
+
+    :param date: Дата торгов.
+    :param session: Сессия БД.
+    """
+    s = perf_counter()
+    url = date_to_link(date)
+    df = process_sheet_handler(url)
     async with session.begin():
         trades = [Trade(**row.to_dict()) for _, row in df.iterrows()]
         session.add_all(trades)
     await session.commit()
-    return "Good!"
+    return perf_counter() - s
+
+
+async def async_bulk_upload_trades(
+    date_start: datetime, date_end: datetime, session: AsyncSession
+) -> float:
+    """
+    Асинхронный сервис обработки данных о продажах для диапазона дат.
+
+    :param date_start: Дата начала торгов.
+    :param date_end: Дата начала торгов.
+    :param session: Сессия БД.
+    """
+    s = perf_counter()
+    url_set = range_to_links(date_start, date_end)
+    with ProcessPoolExecutor() as process_pool:
+        loop: AbstractEventLoop = asyncio.get_running_loop()
+        calls: List[partial[str]] = [
+            partial(process_sheet_handler, url) for url in url_set
+        ]
+        call_coros = [loop.run_in_executor(process_pool, call) for call in calls]
+        done, _ = await asyncio.wait(call_coros)
+        for done_task in done:
+            df = await done_task
+            async with session.begin():
+                if df is not None:
+                    trades = [Trade(**row.to_dict()) for _, row in df.iterrows()]
+                    session.add_all(trades)
+    await session.commit()
+    return perf_counter() - s
+
+
+def sync_bulk_upload_trades(
+    date_start: datetime, date_end: datetime, session: Session
+) -> float:
+    """
+    Синхронный сервис обработки данных о продажах для диапазона дат.
+
+    :param date_start: Дата начала торгов.
+    :param date_end: Дата начала торгов.
+    :param session: Сессия БД.
+    """
+    s = perf_counter()
+    url_set = range_to_links(date_start, date_end)
+    for url in url_set:
+        df = process_sheet_handler(url)
+        if df is not None:
+            trades = [Trade(**row.to_dict()) for _, row in df.iterrows()]
+            session.add_all(trades)
+    session.commit()
+    return perf_counter() - s

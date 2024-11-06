@@ -10,11 +10,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
 
-sync_engine = create_engine(settings.pg_dsn, echo=True)
+sync_engine = create_engine(settings.get_db_url(is_async=False), echo=True)
 
 sync_session = sessionmaker(sync_engine)
 
-async_engine = create_async_engine(settings.async_pg_dsn, echo=True)
+async_engine = create_async_engine(settings.get_db_url(is_async=True), echo=True)
 
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
