@@ -7,11 +7,11 @@ from config import settings
 
 def make_config() -> Config:
     alembic_config = Config()
-    alembic_config.set_main_option("script_location", settings.script_location)
-    alembic_config.set_main_option("version_locations", settings.version_locations)
-    alembic_config.set_main_option("sqlalchemy.url", settings.async_pg_dsn)
-    alembic_config.set_main_option("file_template", settings.file_template)
-    alembic_config.set_main_option("timezone", settings.timezone)
+    alembic_config.set_main_option("script_location", settings.SCRIPT_LOCATION)
+    alembic_config.set_main_option("version_locations", settings.VERSION_LOCATIONS)
+    alembic_config.set_main_option("sqlalchemy.url", settings.get_db_url(is_async=True))
+    alembic_config.set_main_option("file_template", settings.FILE_TEMPLATE)
+    alembic_config.set_main_option("timezone", settings.TIMEZONE)
     return alembic_config
 
 
