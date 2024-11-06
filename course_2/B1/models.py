@@ -1,3 +1,4 @@
+from config import settings
 from sqlalchemy import Column
 from sqlalchemy import Date
 from sqlalchemy import ForeignKey
@@ -7,15 +8,8 @@ from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-convention = {
-    "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
 
-metadata = MetaData(naming_convention=convention, schema="bookstore")
+metadata = MetaData(naming_convention=settings.CONVENTION, schema=settings.SCHEMA)
 Base = declarative_base(metadata=metadata)
 
 
