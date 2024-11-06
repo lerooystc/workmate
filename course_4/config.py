@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     FILE_TEMPLATE: str = "%%(rev)s_%%(slug)s"
     TIMEZONE: str = "UTC"
     SPIMEX_EXCEL_URL: str = "oil_xls_{}162000.xls"
-    PG_DSN: PostgresDsn = "postgresql://postgres:1231231@localhost:5432/workmate"
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "1231231"
     DB_HOST: str = "localhost"
