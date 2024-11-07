@@ -158,6 +158,9 @@ class DogViewSet(
         return super().get_serializer_class()
 
     def create(self, request):
+        """
+        Переписанный метод создания для возвращения другой схемы.
+        """
         serializer = DogSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             instance = serializer.save()
