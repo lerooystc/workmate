@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Optional
+import time
 
 from db.session import SessionGetter
 from fastapi import APIRouter
@@ -10,7 +11,9 @@ from services.services import async_bulk_upload_trades
 from services.services import async_upload_trades
 from services.services import get_trades
 from services.services import get_trading_dates
+from common.util import no_db_session_key_builder
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_cache.decorator import cache
 
 
 router = APIRouter()
@@ -26,10 +29,14 @@ async def async_parse_trades(
     return_value = await async_upload_trades(date=date, session=db)
     if not return_value:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return {"Uploaded": f"All trades have been uploaded in {return_value} secs."}
+    return {
+        "status": "success",
+        "detail": f"All trades have been uploaded in {return_value} secs.",
+    }
 
 
 @router.post("/trades/bulk_async/", status_code=status.HTTP_201_CREATED)
+@cache(90)
 async def async_bulk_parse_trades(
     date_start: date,
     date_end: date,
@@ -40,7 +47,10 @@ async def async_bulk_parse_trades(
     )
     if not return_value:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return {"Uploaded": f"All trades have been uploaded in {return_value} secs."}
+    return {
+        "status": "success",
+        "detail": f"All trades have been uploaded in {return_value} secs.",
+    }
 
 
 @router.get("/trades/get_last_trading_dates", status_code=status.HTTP_200_OK)
@@ -49,7 +59,7 @@ async def get_last_trading_dates(
     db: AsyncSession = Depends(get_async_session),
 ):
     return_value = await get_trading_dates(days=days, session=db)
-    return {"status": "success", "results": len(return_value), "dates": return_value}
+    return {"status": "success", "results": len(return_value), "data": return_value}
 
 
 @router.get("/trades/get_dynamics", status_code=status.HTTP_200_OK)
@@ -69,10 +79,11 @@ async def get_dynamics(
         delivery_type_id=delivery_type_id,
         delivery_basis_id=delivery_basis_id,
     )
-    return {"status": "success", "results": len(return_value), "trades": return_value}
+    return {"status": "success", "results": len(return_value), "data": return_value}
 
 
 @router.get("/trades/get_trading_results", status_code=status.HTTP_200_OK)
+@cache(expire=90, key_builder=no_db_session_key_builder)
 async def get_trading_results(
     db: AsyncSession = Depends(get_async_session),
     limit: int = 100,
@@ -87,4 +98,10 @@ async def get_trading_results(
         delivery_type_id=delivery_type_id,
         delivery_basis_id=delivery_basis_id,
     )
-    return {"status": "success", "results": len(return_value), "trades": return_value}
+    return {"status": "success", "results": len(return_value), "data": return_value}
+
+
+@router.get("/trades/kek")
+@cache(expire=10)
+async def index(fag: int):
+    return time.time()

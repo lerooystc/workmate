@@ -108,6 +108,12 @@ async def async_bulk_upload_trades(
 
 
 async def get_trading_dates(days: int, session: AsyncSession) -> list[date]:
+    """
+    Сервис получения последних дат.
+
+    :param days: Кол-во дней, которые требуется получить.
+    :param session: Сессия БД.
+    """
     stmt = select(Trade.date).distinct().order_by(Trade.date.desc()).limit(days)
     results = await session.execute(stmt)
     return results.scalars().all()
@@ -122,6 +128,17 @@ async def get_trades(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
 ) -> list[Trade]:
+    """
+    Сервис получения торгов.
+
+    :param session: Сессия БД.
+    :param oil_id: Опциональный фильтр по id нефти.
+    :param delivery_type_id: Опциональный фильтр по id типа доставки.
+    :param delivery_basis_id: Опциональный фильтр по id базиса доставки.
+    :param limit: Опциональный лимитер.
+    :param start_date: Опциональный фильтр по дате торгов (начало).
+    :param end_date: Опциональный фильтр по дате торгов (конец).
+    """
     stmt = select(Trade).order_by(Trade.date.desc())
     if start_date and end_date:
         stmt = stmt.filter(Trade.date >= start_date, Trade.date <= end_date)
