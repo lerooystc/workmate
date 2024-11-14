@@ -1,6 +1,5 @@
 from datetime import date
 from typing import Optional
-import time
 
 from db.session import SessionGetter
 from fastapi import APIRouter
@@ -36,7 +35,6 @@ async def async_parse_trades(
 
 
 @router.post("/trades/bulk_async/", status_code=status.HTTP_201_CREATED)
-@cache(90)
 async def async_bulk_parse_trades(
     date_start: date,
     date_end: date,
@@ -54,6 +52,7 @@ async def async_bulk_parse_trades(
 
 
 @router.get("/trades/get_last_trading_dates", status_code=status.HTTP_200_OK)
+@cache(expire=90, key_builder=no_db_session_key_builder)
 async def get_last_trading_dates(
     days: int = 5,
     db: AsyncSession = Depends(get_async_session),
@@ -63,6 +62,7 @@ async def get_last_trading_dates(
 
 
 @router.get("/trades/get_dynamics", status_code=status.HTTP_200_OK)
+@cache(expire=90, key_builder=no_db_session_key_builder)
 async def get_dynamics(
     start_date: date,
     end_date: date,
@@ -99,9 +99,3 @@ async def get_trading_results(
         delivery_basis_id=delivery_basis_id,
     )
     return {"status": "success", "results": len(return_value), "data": return_value}
-
-
-@router.get("/trades/kek")
-@cache(expire=10)
-async def index(fag: int):
-    return time.time()
