@@ -1,3 +1,5 @@
+from apps.common.const import DjangoActions
+from apps.common.const import HttpMethod
 from apps.showcase.models import Breed
 from apps.showcase.models import Dog
 from drf_spectacular.utils import extend_schema
@@ -10,6 +12,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -27,7 +30,7 @@ from .serializers import ReadDogSerializer
                 response=ReadBreedSerializer, description="Список пород."
             ),
             400: OpenApiResponse(
-                description="Инвалидные данные. Не удалось получить породы."
+                description="Невалидные данные. Не удалось получить породы."
             ),
         },
     ),
@@ -47,7 +50,7 @@ from .serializers import ReadDogSerializer
                 response=BreedSerializer, description="Создана порода."
             ),
             400: OpenApiResponse(
-                description="Не удалось создать породу. Инвалидные данные."
+                description="Не удалось создать породу. Невалидные данные."
             ),
         },
     ),
@@ -58,7 +61,7 @@ from .serializers import ReadDogSerializer
                 response=BreedSerializer, description="Изменены данные о породе."
             ),
             400: OpenApiResponse(
-                description="Не удалось создать породу. Инвалидные данные."
+                description="Не удалось создать породу. Невалидные данные."
             ),
             404: OpenApiResponse(description="Порода не найдена."),
         },
@@ -82,10 +85,15 @@ class BreedViewSet(
     queryset = Breed.objects.order_by("id")
     serializer_class = BreedSerializer
     permission_classes = (AllowAny,)
-    http_method_names = ["get", "post", "put", "delete"]
+    http_method_names = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+        HttpMethod.PUT,
+        HttpMethod.DELETE,
+    ]
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve"):
+        if self.action in (DjangoActions.LIST, DjangoActions.RETRIEVE):
             return ReadBreedSerializer
         return super().get_serializer_class()
 
@@ -96,7 +104,7 @@ class BreedViewSet(
         responses={
             200: OpenApiResponse(response=DogSerializer, description="Список собак."),
             400: OpenApiResponse(
-                description="Инвалидные данные (порода). Не удалось получить собак."
+                description="Невалидные данные (порода). Не удалось получить собак."
             ),
         },
     ),
@@ -112,9 +120,11 @@ class BreedViewSet(
     create=extend_schema(
         tags=["Собака"],
         responses={
-            201: OpenApiResponse(response=DogSerializer, description="Создана собака."),
+            201: OpenApiResponse(
+                response=ReadDogSerializer, description="Создана собака."
+            ),
             400: OpenApiResponse(
-                description="Не удалось создать собаку. Инвалидные данные."
+                description="Не удалось создать собаку. Невалидные данные."
             ),
         },
     ),
@@ -125,7 +135,7 @@ class BreedViewSet(
                 response=DogSerializer, description="Изменены данные о собаке."
             ),
             400: OpenApiResponse(
-                description="Не удалось создать собаку. Инвалидные данные."
+                description="Не удалось создать собаку. Невалидные данные."
             ),
             404: OpenApiResponse(description="Собака не найдена."),
         },
@@ -150,16 +160,21 @@ class DogViewSet(
     queryset = Dog.objects.select_related("breed").order_by("-id")
     serializer_class = DogSerializer
     permission_classes = (AllowAny,)
-    http_method_names = ["get", "post", "put", "delete"]
+    http_method_names = [
+        HttpMethod.GET,
+        HttpMethod.POST,
+        HttpMethod.PUT,
+        HttpMethod.DELETE,
+    ]
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve"):
+        if self.action in (DjangoActions.LIST, DjangoActions.RETRIEVE):
             return ReadDogSerializer
         return super().get_serializer_class()
 
-    def create(self, request):
+    def create(self, request: Request) -> Response:
         """
-        Переписанный метод создания для возвращения другой схемы.
+        Переписанный метод создания для возвращения другой схемы ResponseModel.
         """
         serializer = DogSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():

@@ -6,8 +6,6 @@ from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
 
-# Create your models here.
-
 
 class Breed(models.Model):
     """Породы собак"""
