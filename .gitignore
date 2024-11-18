@@ -21,3 +21,5 @@ docs_build
 site_build
 docs.zip
 archive.zip
+*.sqlite3
+.ruff_cache
