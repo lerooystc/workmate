@@ -72,12 +72,12 @@ async def get_dynamics(
     delivery_basis_id: Optional[str] = None,
 ):
     return_value = await get_trades(
-        start_date=start_date,
-        end_date=end_date,
         session=db,
         oil_id=oil_id,
         delivery_type_id=delivery_type_id,
         delivery_basis_id=delivery_basis_id,
+        start_date=start_date,
+        end_date=end_date,
     )
     return {"status": "success", "results": len(return_value), "data": return_value}
 
