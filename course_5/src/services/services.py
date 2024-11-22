@@ -4,7 +4,6 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import date
 from datetime import datetime
 from functools import partial
-from time import perf_counter
 from typing import List
 from typing import Optional
 
@@ -61,21 +60,20 @@ def process_sheet_handler(url: str) -> pd.DataFrame | None:
         return None
 
 
-async def async_upload_trades(date: datetime, session: AsyncSession) -> float:
+async def async_upload_trades(date: datetime, session: AsyncSession) -> bool:
     """
     Асинхронный сервис обработки данных о продажах для одного дня.
 
     :param date: Дата торгов.
     :param session: Сессия БД.
     """
-    s = perf_counter()
     url = date_to_link(date)
     df = process_sheet_handler(url)
     async with session.begin():
         trades = [Trade(**row.to_dict()) for _, row in df.iterrows()]
         session.add_all(trades)
     await session.commit()
-    return perf_counter() - s
+    return True
 
 
 async def async_bulk_upload_trades(
@@ -88,7 +86,6 @@ async def async_bulk_upload_trades(
     :param date_end: Дата начала торгов.
     :param session: Сессия БД.
     """
-    s = perf_counter()
     url_set = range_to_links(date_start, date_end)
     with ProcessPoolExecutor() as process_pool:
         loop: AbstractEventLoop = asyncio.get_running_loop()
@@ -104,7 +101,7 @@ async def async_bulk_upload_trades(
                     trades = [Trade(**row.to_dict()) for _, row in df.iterrows()]
                     session.add_all(trades)
     await session.commit()
-    return perf_counter() - s
+    return True
 
 
 async def get_trading_dates(days: int, session: AsyncSession) -> list[date]:

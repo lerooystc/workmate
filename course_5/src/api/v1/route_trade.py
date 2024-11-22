@@ -30,7 +30,7 @@ async def async_parse_trades(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return {
         "status": "success",
-        "detail": f"All trades have been uploaded in {return_value} secs.",
+        "detail": "All trades have been uploaded.",
     }
 
 
@@ -47,7 +47,7 @@ async def async_bulk_parse_trades(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return {
         "status": "success",
-        "detail": f"All trades have been uploaded in {return_value} secs.",
+        "detail": "All trades have been uploaded.",
     }
 
 
