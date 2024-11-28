@@ -1,0 +1,2 @@
+class DeadLinkException(Exception):
+    pass
