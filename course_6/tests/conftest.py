@@ -11,7 +11,7 @@ from datetime import date
 from functools import wraps
 
 from src.db.models import Trade
-from .const import EXCEL_DF
+from .const import EXCEL_DF, EXCEL_ANOTHER_DF
 import pandas as pd
 from src.config import settings
 from src.db.base import Base
@@ -117,6 +117,25 @@ def spimex_response() -> Generator[Path, None, None]:
         EXCEL_DF.to_excel(writer, sheet_name="Sheet1", index=False)
     yield Path("mock_excel_file.xlsx").absolute()
     os.remove("mock_excel_file.xlsx")
+
+
+@pytest.fixture
+def different_spimex_response() -> Generator[Path, None, None]:
+    """
+    Фикстура Pytest, создающая второй мок Excel-файл из DataFrame для тестирования асинхронного парсинга.
+
+    Эта фикстура записывает содержимое DataFrame EXCEL_DF во временный Excel-файл
+    с именем 'mock_excel_file.xlsx'. Файл возвращается как объект Path, указывающий
+    на его абсолютное местоположение. После завершения теста, использующего эту фикстуру,
+    файл удаляется.
+
+    Возвращает:
+        Path: Абсолютный путь к мок Excel-файлу.
+    """
+    with pd.ExcelWriter("mock_excel_file_2.xlsx") as writer:
+        EXCEL_ANOTHER_DF.to_excel(writer, sheet_name="Sheet1", index=False)
+    yield Path("mock_excel_file_2.xlsx").absolute()
+    os.remove("mock_excel_file_2.xlsx")
 
 
 @pytest.fixture

@@ -321,3 +321,5 @@ MOCK_EXCEL_DICT = {
 }
 
 EXCEL_DF = pd.DataFrame.from_dict(MOCK_EXCEL_DICT)
+EXCEL_ANOTHER_DF = pd.DataFrame.from_dict(MOCK_EXCEL_DICT)
+EXCEL_ANOTHER_DF.loc[2, "Форма СЭТ-БТ"] = "22.11.2024"
